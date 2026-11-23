@@ -3,6 +3,7 @@
 /finsh.zip
 /lerobot-nexarm/
 /nexarm-f3a/plugin/
+/nexarm-f3a/third_party/
 
 # Local downloads, editor history, virtualenvs and caches
 /.downloads/

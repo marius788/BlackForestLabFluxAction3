@@ -12,6 +12,9 @@ set "HF_LEROBOT_HOME=H:\Meine Ablage\02_ARBEIT_&_PROJEKTE\FluxAction\lerobot"
 rem ---- Dataset name prefix (a timestamp is appended per recording session) and target size ----
 set "F3A_DATASET=nexarm_f3a_stack_boxes"
 set "F3A_TARGET_EPISODES=20"
+rem ---- Default English task instruction and inference server URL for FLUX 3 Action ----
+set "F3A_TASK=put the small box on top of the big box"
+set "F3A_SERVER_URL=http://127.0.0.1:8000"
 rem ---- Live camera viewer in the browser during teleoperation / recording: 0 = off, 1 = on ----
 rem Off by default: a stalled viewer blocks the control loop and the arm stops following.
 rem Check the camera picture with check-cameras.cmd instead.
