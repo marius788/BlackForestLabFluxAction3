@@ -108,7 +108,13 @@ class Flux3Model:
         config.device = "cuda"
         config.video_vae_id = str(ENCODERS_DIR / "video_vae.safetensors")
         config.text_encoder_id = str(ENCODERS_DIR / "text_encoder")
-        self.policy = Flux3Policy.from_pretrained(str(POLICY_DIR), config=config).eval()
+        # Load weights directly in bfloat16 so 15 GB RAM cloud VMs do not swap-thrash during startup.
+        prev_dtype = torch.get_default_dtype()
+        torch.set_default_dtype(torch.bfloat16)
+        try:
+            self.policy = Flux3Policy.from_pretrained(str(POLICY_DIR), config=config).eval()
+        finally:
+            torch.set_default_dtype(prev_dtype)
         if adapter is not None:  # optional LoRA adapter trained on our own data
             from peft import PeftModel
 
