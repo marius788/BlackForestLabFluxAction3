@@ -168,40 +168,41 @@ H:\Meine Ablage\02_ARBEIT_&_PROJEKTE\FluxAction\lerobot\local\
 
 ### Screenshots aus echten Trainingsvideos
 
-> Alle Bilder stammen direkt aus den MP4s in `H:\Meine Ablage\02_ARBEIT_&_PROJEKTE\FluxAction\lerobot\local` (extrahiert bei 15 % / 50 % / 85 % der Videolänge) und liegen versioniert unter `assets/training/`.
+> Alle Bilder stammen direkt aus den MP4s in `H:\Meine Ablage\02_ARBEIT_&_PROJEKTE\FluxAction\lerobot\local` — je Episode ein Frame vom **Start**, aus der **Mitte** und vom **Ende** des Ablaufs — und liegen versioniert unter `assets/training/`.
 
 #### Aufgabe A — Schachbauer greifen (`V1SchachBauer`)
 
-| 15 % (Anfahrt) | 50 % (Greifen) | 85 % (Ablage) |
+| Phase 1 — Anfahrt | Phase 2 — Greifen | Phase 3 — Ablage |
 |---|---|---|
-| ![V1 15%](assets/training/v1_schachbauer_dual_15pct.jpg) | ![V1 50%](assets/training/v1_schachbauer_dual_50pct.jpg) | ![V1 85%](assets/training/v1_schachbauer_dual_85pct.jpg) |
+| ![V1 Anfahrt](assets/training/v1_schachbauer_dual_15pct.jpg) | ![V1 Greifen](assets/training/v1_schachbauer_dual_50pct.jpg) | ![V1 Ablage](assets/training/v1_schachbauer_dual_85pct.jpg) |
 | *Annäherung — Scene links, Wrist rechts* | *Greifer schließt — Wrist zeigt Kontakt* | *Absetzen / Rückzug* |
 
 <details>
 <summary>Einzelansichten V1 (Scene / Wrist getrennt)</summary>
 
-| | Scene | Wrist |
+| Phase | Scene | Wrist |
 |---|---|---|
-| 15 % | ![s15](assets/training/v1_schachbauer_scene_15pct.jpg) | ![w15](assets/training/v1_schachbauer_wrist_15pct.jpg) |
-| 50 % | ![s50](assets/training/v1_schachbauer_scene_50pct.jpg) | ![w50](assets/training/v1_schachbauer_wrist_50pct.jpg) |
-| 85 % | ![s85](assets/training/v1_schachbauer_scene_85pct.jpg) | ![w85](assets/training/v1_schachbauer_wrist_85pct.jpg) |
+| Anfahrt | ![s Anfahrt](assets/training/v1_schachbauer_scene_15pct.jpg) | ![w Anfahrt](assets/training/v1_schachbauer_wrist_15pct.jpg) |
+| Greifen | ![s Greifen](assets/training/v1_schachbauer_scene_50pct.jpg) | ![w Greifen](assets/training/v1_schachbauer_wrist_50pct.jpg) |
+| Ablage | ![s Ablage](assets/training/v1_schachbauer_scene_85pct.jpg) | ![w Ablage](assets/training/v1_schachbauer_wrist_85pct.jpg) |
 
 </details>
 
 #### Aufgabe B — Boxen stapeln (`nexarm_f3a_stack_boxes_20261120`)
 
-| 15 % (Anfahrt kleine Box) | 50 % (Anheben) | 85 % (Absetzen auf großer Box) |
+| Phase 1 — Anfahrt | Phase 2 — Anheben | Phase 3 — Absetzen |
 |---|---|---|
-| ![Box 15%](assets/training/stack_boxes_20261120_dual_15pct.jpg) | ![Box 50%](assets/training/stack_boxes_20261120_dual_50pct.jpg) | ![Box 85%](assets/training/stack_boxes_20261120_dual_85pct.jpg) |
+| ![Box Anfahrt](assets/training/stack_boxes_20261120_dual_15pct.jpg) | ![Box Anheben](assets/training/stack_boxes_20261120_dual_50pct.jpg) | ![Box Absetzen](assets/training/stack_boxes_20261120_dual_85pct.jpg) |
+| *Kleine Box anfahren* | *Anheben* | *Auf großer Box absetzen* |
 
 <details>
 <summary>Einzelansichten Boxen (Scene / Wrist getrennt)</summary>
 
-| | Scene | Wrist |
+| Phase | Scene | Wrist |
 |---|---|---|
-| 15 % | ![s15](assets/training/stack_boxes_20261120_scene_15pct.jpg) | ![w15](assets/training/stack_boxes_20261120_wrist_15pct.jpg) |
-| 50 % | ![s50](assets/training/stack_boxes_20261120_scene_50pct.jpg) | ![w50](assets/training/stack_boxes_20261120_wrist_50pct.jpg) |
-| 85 % | ![s85](assets/training/stack_boxes_20261120_scene_85pct.jpg) | ![w85](assets/training/stack_boxes_20261120_wrist_85pct.jpg) |
+| Anfahrt | ![s Anfahrt](assets/training/stack_boxes_20261120_scene_15pct.jpg) | ![w Anfahrt](assets/training/stack_boxes_20261120_wrist_15pct.jpg) |
+| Anheben | ![s Anheben](assets/training/stack_boxes_20261120_scene_50pct.jpg) | ![w Anheben](assets/training/stack_boxes_20261120_wrist_50pct.jpg) |
+| Absetzen | ![s Absetzen](assets/training/stack_boxes_20261120_scene_85pct.jpg) | ![w Absetzen](assets/training/stack_boxes_20261120_wrist_85pct.jpg) |
 
 </details>
 
