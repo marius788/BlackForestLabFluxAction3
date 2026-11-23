@@ -1,0 +1,36 @@
+# NexArm teleoperation with cameras (4-teleop.cmd). Ports are overridden from _env.cmd.
+robot:
+  type: nexarm_follower
+  id: follower
+  calibration_dir: calibration/follower
+  port: COM24
+  baudrate: 1000000
+  use_degrees: true
+  disable_torque_on_disconnect: false
+  readback_after_write: true
+  cameras:
+    scene:
+      type: opencv
+      index_or_path: 0
+      width: 640
+      height: 480
+      fps: 30
+    wrist:
+      type: opencv
+      index_or_path: 2
+      width: 640
+      height: 480
+      fps: 30
+
+teleop:
+  type: nexarm_leader
+  id: leader
+  calibration_dir: calibration/leader
+  follower_calibration_path: calibration/follower/follower.json
+  port: COM25
+  baudrate: 1000000
+  use_degrees: true
+
+# The live viewer is switched on by the launcher only when F3A_VIEWER=1 in _env.cmd.
+display_data: false
+fps: 30

@@ -1,0 +1,23 @@
+# First teleoperation test after both calibrations (3-teleop-no-cameras.cmd). Ports from _env.cmd.
+robot:
+  type: nexarm_follower
+  id: follower
+  calibration_dir: calibration/follower
+  port: COM24
+  baudrate: 1000000
+  use_degrees: true
+  disable_torque_on_disconnect: false
+  readback_after_write: true
+  cameras: {}
+
+teleop:
+  type: nexarm_leader
+  id: leader
+  calibration_dir: calibration/leader
+  follower_calibration_path: calibration/follower/follower.json
+  port: COM25
+  baudrate: 1000000
+  use_degrees: true
+
+display_data: false
+fps: 30

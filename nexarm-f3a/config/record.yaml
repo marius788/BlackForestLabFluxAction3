@@ -1,0 +1,60 @@
+# NexArm recording for FLUX-3-Action (upstream LeRobot + lerobot_robot_nexarm plugin).
+# Started by 5-record.cmd / 6-record-continue.cmd from the nexarm-f3a folder; ports and
+# dataset.repo_id are overridden there from _env.cmd.
+#
+# What makes this dataset F3A-compatible:
+#   * use_degrees: true  -> action / observation.state in degrees, gripper 0..100 (not raw ticks)
+#   * cameras named scene + wrist -> observation.images.scene / observation.images.wrist
+#   * 30 fps, 640x480
+robot:
+  type: nexarm_follower
+  id: follower
+  calibration_dir: calibration/follower
+  port: COM24
+  baudrate: 1000000 
+  use_degrees: true
+  disable_torque_on_disconnect: false
+  readback_after_write: true
+  cameras:
+    scene:
+      type: opencv
+      index_or_path: 0
+      width: 640
+      height: 480
+      fps: 30
+    wrist:
+      type: opencv
+      index_or_path: 2
+      width: 640
+      height: 480
+      fps: 30
+
+teleop:
+  type: nexarm_leader
+  id: leader
+  calibration_dir: calibration/leader
+  follower_calibration_path: calibration/follower/follower.json
+  port: COM25
+  baudrate: 1000000
+  use_degrees: true
+
+dataset:
+  repo_id: local/nexarm_f3a_stack_boxes   # LeRobot appends _YYYYMMDD_HHMMSS per session
+  single_task: "put the small box on top of the big box"
+  # 20 episodes in one session. 6-record-continue.cmd resumes the newest dataset up to F3A_TARGET_EPISODES.
+  num_episodes: 20
+  episode_time_s: 40     # right arrow ends an episode early (press it as soon as the box is stacked)
+  reset_time_s: 25
+  fps: 30
+  video: true
+  # Encode frames directly into the video instead of writing PNGs first (x64 emulation is slow at that).
+  streaming_encoding: true
+  encoder_threads: 2
+  push_to_hub: false
+
+# The live viewer is switched on by the launcher only when F3A_VIEWER=1 in _env.cmd. It is off by
+# default: LeRobot writes to the viewer inside the control loop, and a stalled viewer stops the arm.
+display_data: false
+play_sounds: true
+
+

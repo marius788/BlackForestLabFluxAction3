@@ -1,0 +1,25 @@
+# External / nested repositories and vendor archives
+/finsh/
+/finsh.zip
+/lerobot-nexarm/
+/nexarm-f3a/plugin/
+
+# Local downloads, editor history, virtualenvs and caches
+/.downloads/
+/.history/
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+
+# Datasets, outputs and recordings
+/datasets/
+outputs/
+*.mp4
+
+# Secrets, environment files and SSH known_hosts
+.env
+*.env
+!.env.example
+.known_hosts
