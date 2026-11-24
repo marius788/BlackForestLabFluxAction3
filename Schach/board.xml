@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Chessboard for the NexArm tabletop; included by chess_scene.xml. The checker is 64
+     visual-only tiles on a single solid slab, so the board is one static body the arm
+     can sweep over and the pieces rest on a flat, grate-free surface. -->
+<mujoco model="NexArm chessboard">
+  <default>
+    <default class="chessboard">
+      <geom contype="2" conaffinity="2" friction="1 0.005 0.0001" />
+    </default>
+    <default class="chess_square">
+      <geom type="box" contype="0" conaffinity="0" group="2" />
+    </default>
+    <default class="chess_frame">
+      <geom type="box" contype="2" conaffinity="2" friction="1 0.005 0.0001" />
+    </default>
+  </default>
+  <asset>
+    <material name="chess_dark" rgba="0.16 0.10 0.06 1" specular="0.3" shininess="0.2" roughness="0.5" />
+    <material name="chess_light" rgba="0.86 0.80 0.68 1" specular="0.3" shininess="0.2" roughness="0.5" />
+    <material name="chess_wood" rgba="0.35 0.20 0.10 1" specular="0.4" shininess="0.3" roughness="0.4" />
+  </asset>
+  <worldbody>
+    <body name="chessboard" pos="0 -0.25 0">
+      <geom name="chessboard_slab" type="box" pos="0 0 0.005" size="0.1 0.1 0.005" class="chessboard" rgba="0.12 0.08 0.05 1" />
+      <geom name="chessboard_frame_north" pos="0 0.103 0.008" size="0.106 0.003 0.005" class="chess_frame" material="chess_wood" />
+      <geom name="chessboard_frame_south" pos="0 -0.103 0.008" size="0.106 0.003 0.005" class="chess_frame" material="chess_wood" />
+      <geom name="chessboard_frame_west" pos="-0.103 0 0.008" size="0.003 0.1 0.005" class="chess_frame" material="chess_wood" />
+      <geom name="chessboard_frame_east" pos="0.103 0 0.008" size="0.003 0.1 0.005" class="chess_frame" material="chess_wood" />
+      <geom name="chess_square_a1" type="box" class="chess_square" material="chess_dark" pos="-0.0875 -0.0875 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_b1" type="box" class="chess_square" material="chess_light" pos="-0.0625 -0.0875 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_c1" type="box" class="chess_square" material="chess_dark" pos="-0.0375 -0.0875 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_d1" type="box" class="chess_square" material="chess_light" pos="-0.0125 -0.0875 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_e1" type="box" class="chess_square" material="chess_dark" pos="0.0125 -0.0875 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_f1" type="box" class="chess_square" material="chess_light" pos="0.0375 -0.0875 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_g1" type="box" class="chess_square" material="chess_dark" pos="0.0625 -0.0875 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_h1" type="box" class="chess_square" material="chess_light" pos="0.0875 -0.0875 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_a2" type="box" class="chess_square" material="chess_light" pos="-0.0875 -0.0625 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_b2" type="box" class="chess_square" material="chess_dark" pos="-0.0625 -0.0625 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_c2" type="box" class="chess_square" material="chess_light" pos="-0.0375 -0.0625 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_d2" type="box" class="chess_square" material="chess_dark" pos="-0.0125 -0.0625 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_e2" type="box" class="chess_square" material="chess_light" pos="0.0125 -0.0625 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_f2" type="box" class="chess_square" material="chess_dark" pos="0.0375 -0.0625 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_g2" type="box" class="chess_square" material="chess_light" pos="0.0625 -0.0625 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_h2" type="box" class="chess_square" material="chess_dark" pos="0.0875 -0.0625 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_a3" type="box" class="chess_square" material="chess_dark" pos="-0.0875 -0.0375 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_b3" type="box" class="chess_square" material="chess_light" pos="-0.0625 -0.0375 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_c3" type="box" class="chess_square" material="chess_dark" pos="-0.0375 -0.0375 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_d3" type="box" class="chess_square" material="chess_light" pos="-0.0125 -0.0375 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_e3" type="box" class="chess_square" material="chess_dark" pos="0.0125 -0.0375 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_f3" type="box" class="chess_square" material="chess_light" pos="0.0375 -0.0375 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_g3" type="box" class="chess_square" material="chess_dark" pos="0.0625 -0.0375 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_h3" type="box" class="chess_square" material="chess_light" pos="0.0875 -0.0375 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_a4" type="box" class="chess_square" material="chess_light" pos="-0.0875 -0.0125 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_b4" type="box" class="chess_square" material="chess_dark" pos="-0.0625 -0.0125 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_c4" type="box" class="chess_square" material="chess_light" pos="-0.0375 -0.0125 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_d4" type="box" class="chess_square" material="chess_dark" pos="-0.0125 -0.0125 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_e4" type="box" class="chess_square" material="chess_light" pos="0.0125 -0.0125 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_f4" type="box" class="chess_square" material="chess_dark" pos="0.0375 -0.0125 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_g4" type="box" class="chess_square" material="chess_light" pos="0.0625 -0.0125 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_h4" type="box" class="chess_square" material="chess_dark" pos="0.0875 -0.0125 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_a5" type="box" class="chess_square" material="chess_dark" pos="-0.0875 0.0125 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_b5" type="box" class="chess_square" material="chess_light" pos="-0.0625 0.0125 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_c5" type="box" class="chess_square" material="chess_dark" pos="-0.0375 0.0125 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_d5" type="box" class="chess_square" material="chess_light" pos="-0.0125 0.0125 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_e5" type="box" class="chess_square" material="chess_dark" pos="0.0125 0.0125 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_f5" type="box" class="chess_square" material="chess_light" pos="0.0375 0.0125 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_g5" type="box" class="chess_square" material="chess_dark" pos="0.0625 0.0125 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_h5" type="box" class="chess_square" material="chess_light" pos="0.0875 0.0125 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_a6" type="box" class="chess_square" material="chess_light" pos="-0.0875 0.0375 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_b6" type="box" class="chess_square" material="chess_dark" pos="-0.0625 0.0375 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_c6" type="box" class="chess_square" material="chess_light" pos="-0.0375 0.0375 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_d6" type="box" class="chess_square" material="chess_dark" pos="-0.0125 0.0375 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_e6" type="box" class="chess_square" material="chess_light" pos="0.0125 0.0375 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_f6" type="box" class="chess_square" material="chess_dark" pos="0.0375 0.0375 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_g6" type="box" class="chess_square" material="chess_light" pos="0.0625 0.0375 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_h6" type="box" class="chess_square" material="chess_dark" pos="0.0875 0.0375 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_a7" type="box" class="chess_square" material="chess_dark" pos="-0.0875 0.0625 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_b7" type="box" class="chess_square" material="chess_light" pos="-0.0625 0.0625 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_c7" type="box" class="chess_square" material="chess_dark" pos="-0.0375 0.0625 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_d7" type="box" class="chess_square" material="chess_light" pos="-0.0125 0.0625 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_e7" type="box" class="chess_square" material="chess_dark" pos="0.0125 0.0625 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_f7" type="box" class="chess_square" material="chess_light" pos="0.0375 0.0625 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_g7" type="box" class="chess_square" material="chess_dark" pos="0.0625 0.0625 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_h7" type="box" class="chess_square" material="chess_light" pos="0.0875 0.0625 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_a8" type="box" class="chess_square" material="chess_light" pos="-0.0875 0.0875 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_b8" type="box" class="chess_square" material="chess_dark" pos="-0.0625 0.0875 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_c8" type="box" class="chess_square" material="chess_light" pos="-0.0375 0.0875 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_d8" type="box" class="chess_square" material="chess_dark" pos="-0.0125 0.0875 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_e8" type="box" class="chess_square" material="chess_light" pos="0.0125 0.0875 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_f8" type="box" class="chess_square" material="chess_dark" pos="0.0375 0.0875 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_g8" type="box" class="chess_square" material="chess_light" pos="0.0625 0.0875 0.0104" size="0.012 0.012 0.0004" />
+      <geom name="chess_square_h8" type="box" class="chess_square" material="chess_dark" pos="0.0875 0.0875 0.0104" size="0.012 0.012 0.0004" />
+    </body>
+  </worldbody>
+</mujoco>

@@ -302,8 +302,10 @@ def main():
     )
     parser.add_argument("--log", type=Path, default=Path("outputs/cloud_client.jsonl"))
     args = parser.parse_args()
-    if (args.config is not None) + args.fake_robot + (args.sim is not None) != 1:
-        parser.error("give exactly one of --config, --fake-robot or --sim")
+    if args.fake_robot and (args.config is not None or args.sim is not None):
+        parser.error("--fake-robot cannot be combined with --config or --sim")
+    if not args.fake_robot and args.config is None and args.sim is None:
+        parser.error("give one of --config, --fake-robot or --sim (optional: --sim with --config)")
 
     if args.sim:
         cloud_dir = str(Path(__file__).resolve().parent)
@@ -311,7 +313,7 @@ def main():
             sys.path.insert(0, cloud_dir)
         from sim import MujocoRobot  # needs mujoco: uv run --project plugin --with mujoco python cloud/client.py ...
 
-        robot = MujocoRobot(args.sim, args.video)
+        robot = MujocoRobot(args.sim, args.video, config_path=args.config)
     else:
         robot = FakeRobot() if args.fake_robot else load_follower(args.config, port=args.port)
     args.log.parent.mkdir(parents=True, exist_ok=True)

@@ -36,7 +36,7 @@ Wir wollen **kein Modell von Grund auf trainieren**, sondern das bestehende **FL
 | Schritt | Was | Wo | Status |
 |---|---|---|---|
 | **A. Daten sammeln** | Leader→Follower Teleoperation, 2× USB-Kameras (scene + wrist), 30 FPS, 640×480, AV1 | `nexarm-f3a/5-record.cmd` → `H:\Meine Ablage\02_ARBEIT_&_PROJEKTE\FluxAction\lerobot\local\<dataset>` | ✅ Datensätze vorhanden (s. Kap. 6) |
-| **B. Simulation** | Regelkreis mit gerenderten Bildern + Physik testen, ohne Hardware-Risiko | `nexarm-f3a/cloud/sim.py` + `sim-test.cmd` (MuJoCo) | ✅ integriert |
+| **B. Simulation** | Regelkreis mit gerenderten Bildern + Physik (Schachbrett + 32 Figuren) testen, inkl. Live-Browser-UI | `Schach/*.xml`, `nexarm-f3a/cloud/sim.py`, `sim_web.py`, `sim-web.cmd` | ✅ integriert |
 | **C. Cloud-GPU** | Training & Inference brauchen CUDA — lokaler Laptop ist ARM/x64-Emulation ohne NVIDIA-GPU → alles auf **AI Galaxy** (`A800 40 GB` oder `RTX 5090 32 GB`) | `nexarm-f3a/cloud/galaxy.py`, `server.py`, `client.py` | ✅ integriert |
 | **D. Fine-Tuning** | LoRA auf eigenen Daten (`examples/flux3/lora.json`, ~10k Micro-Steps, Batch 1–2) | `galaxy.py train / fetch / curves` | 🚧 nächster Schritt |
 | **E. Deployment** | Modell als Server hinter SSH-Tunnel, Client sendet 8 History-Frames → Server liefert 32-Step-Chunk → Safety-Guards → 30 Hz an den Arm | `galaxy.py up` + `8-inference-execute.cmd` | ✅ Dry-Run sicher, Execute nach Freigabe |
@@ -107,17 +107,23 @@ BlackForestLabFluxAction3/               ← dieses Repo (Root wird gepusht)
 ├── check_cameras.py / check_dataset.py  ← Diagnose-Helfer
 ├── setup-nexarm.ps1 / verify-nexarm.ps1
 │
+├── Schach/                              ← ♟️ MuJoCo-Schach-Szene (Schachbrett + 32 Figuren)
+│   ├── chess_scene.xml                  ← Hauptszene (inkl. nexarm.xml, workcell.xml, board + pieces)
+│   ├── board.xml                        ← 64-Felder-Schachbrett (a1..h8, 25 mm Felder)
+│   └── pieces.xml                       ← 32 freie Schachfiguren (w_*/b_*) mit Greifer-Kollision
+│
 ├── nexarm-f3a/                          ← ⭐ Hauptarbeitsverzeichnis (upstr. LeRobot + Plugin)
 │   ├── plugin/                          ← uv-Projekt: lerobot + lerobot_robot_nexarm (F3A-kompatibel)
 │   ├── calibration/follower|leader/     ← gemessene Nullpunkte + drive_mode (0 Grad, Richtungen)
 │   ├── config/
 │   │   ├── record.yaml                  ← F3A-Aufnahme: use_degrees:true, scene+wrist, streaming_encoding
-│   │   ├── inference.yaml               ← Follower-Port + Kameras für cloud/client.py
+│   │   ├── inference.yaml               ← Follower-Port + Kameras + Kalibrierung (Real & Sim)
 │   │   └── teleop*.yaml
 │   ├── cloud/                           ← FLUX.3 Action Cloud-Stack (aus mariorch22/lerobot-nexarm adaptiert)
 │   │   ├── server.py                    ← FastAPI /predict, lädt SO101 + Adapter, /health
 │   │   ├── client.py                    ← Laptop-Client, Safety-Guards, FakeRobot, Sim-Anbindung
-│   │   ├── sim.py                       ← MuJoCo NexArm (gleicher Interface wie echter Follower)
+│   │   ├── sim.py                       ← MuJoCo NexArm (nutzt JointNormalizer aus config/inference.yaml)
+│   │   ├── sim_web.py                   ← Interaktives Browser-Dashboard (MJPEG-Stream, Prompt, Trajektorien)
 │   │   ├── galaxy.py                    ← AI-Galaxy Orchestrierung (setup/up/train/logs/fetch/status)
 │   │   ├── setup_remote.sh              ← Remote-Setup: env + Gewichte (~25 GB)
 │   │   ├── replay_eval.py               ← Offline-Vergleich gegen zurückgehaltene Episoden
@@ -125,7 +131,7 @@ BlackForestLabFluxAction3/               ← dieses Repo (Root wird gepusht)
 │   ├── tools/ / tests/ / third_party/
 │   ├── 1-calibrate-follower.cmd … 6-record-continue.cmd  ← Doppelklick-Pipeline
 │   ├── 7-inference-dryrun.cmd / 8-inference-execute.cmd
-│   ├── sim-test.cmd / viewer.cmd / shell.cmd
+│   ├── sim-web.cmd / sim-test.cmd / viewer.cmd / shell.cmd
 │   └── setup.ps1 / _env.cmd
 │
 ├── finsh/                               ← Hiwonder-Fork (gepinnt + NexArm-Treiber) — gitignored, per finsh.zip
@@ -212,22 +218,30 @@ H:\Meine Ablage\02_ARBEIT_&_PROJEKTE\FluxAction\lerobot\local\
 
 ## 7 — MuJoCo-Simulation (ohne Hardware testen)
 
-Gefahrloses Testen der kompletten Regelschleife mit Physik + gerenderten Bildern:
+Gefahrloses Testen der kompletten Regelschleife mit Physik, Schachbrett (`Schach/chess_scene.xml`, 64 Felder + 32 Figuren) und gerenderten Kamerabildern:
 
 ```powershell
 # 1. Arm-Modell holen (einmalig, inkl. LFS-Assets)
 git clone --depth 1 https://github.com/khanhthanhdev/lerobot-nexarm.git nexarm-f3a/third_party/khanhthanhdev-lerobot-nexarm
 git -C nexarm-f3a/third_party/khanhthanhdev-lerobot-nexarm lfs pull --include "sim/assets/**"
 
-# 2a. Reiner Bewegungstest ohne GPU (Mock-Server + Simulation)
+# 2a. Interaktives Live-Browser-Studio (http://127.0.0.1:8080)
+nexarm-f3a/sim-web.cmd
+
+# 2b. CLI-Bewegungstest ohne GPU (Mock-Server + Simulation -> outputs/sim.mp4)
 uv run nexarm-f3a/cloud/server.py --mock-sweep          # Terminal 1
 nexarm-f3a/sim-test.cmd --chunk-gripper-span 0           # Terminal 2 → outputs/sim.mp4
 
-# 2b. Echte FLUX-Inferenz in Simulation (braucht laufenden Tunnel s. Kap. 8)
-python nexarm-f3a/cloud/client.py --sim nexarm-f3a/third_party/khanhthanhdev-lerobot-nexarm/sim/description/mjcf/scene.xml --video outputs/sim.mp4 --task "put the small box on top of the big box"
+# 2c. Echte FLUX-Inferenz per CLI in der Schach-Simulation (braucht laufenden Tunnel s. Kap. 8)
+python nexarm-f3a/cloud/client.py --sim Schach/chess_scene.xml --config nexarm-f3a/config/inference.yaml --video outputs/sim.mp4 --task "move white pawn e2 to e4" --execute
 ```
 
-`sim.py` baut aus der `scene.xml` zwei Boxen (groß/klein) und eine feste Scene-Kamera ein, mappt unsere Grad-Werte über `SIGN = [1,1,-1,1,1]` + `OFFSET` in MuJoCo-Radiant/Jaw-Travel und erfüllt exakt die Follower-Schnittstelle (`get_observation` / `send_action`). Kein Rückschluss auf Real-Hardware möglich — aber ideal um Tunnel, Guards und Timing zu validieren.
+### Live-Browser-Studio (`sim-web.cmd` / `cloud/sim_web.py`)
+- **Live-MJPEG-Kamerastream (30 Hz)**: Umschaltbar zwischen **`Dual`** (`scene` + `wrist`), **`Scene`**, **`Wrist`** und **`Top`** (Vogelperspektive über dem Schachbrett).
+- **Prompt & Steuerung**: Text-Input für Task-Prompts (`Enter` sendet sofort), Quick-Presets, **`Step 32`** (einzelnen 32-Step-Chunk anfragen & abfahren), **`Run Loop`** (durchgehende Regelschleife), **`Dry-Run (Plan Only)`** (Modell-Antwort ohne Armbewegung inspizieren), **`Reset Board`** und **`Randomize Opening`**.
+- **Action Chunk Telemetry (6-DOF Sparklines)**: Zeigt für alle 6 Gelenke die 8 History-Ticks, die 32 vorhergesagten Steps vom Modell als Kurve, Inferenz-/Roundtrip-Latenz, Safety-Guard-Status sowie die 32×6-Kommandotabelle.
+- **Identische Normalisierung wie am echten Arm**: `sim.py` lädt `config/inference.yaml` und nutzt denselben `JointNormalizer` (`calibration/follower/follower.json`: `homing_offset`, `drive_mode`, `range_min..range_max`, `use_degrees`) wie `NexArmFollower`.
+- **Eingebaute Demo-Backends**: Über das Dropdown oben rechts lässt sich jederzeit zwischen **`Port 8000 (FLUX.3)`** (echtes Modell auf AI Galaxy) und **`Demo: Pawn e2 → e4`** (fährt ohne GPU den Schachzug `e2 → e4` vor) umschalten.
 
 ---
 
@@ -325,7 +339,8 @@ Training: `examples/flux3/lora.json` + LoRA-Recipe aus BFL, 10k Micro-Steps (20k
 | 7 | `6-record-continue.cmd` | Setzt unterbrochene Aufnahme bis 20 Episoden fort | — |
 | 8 | `7-inference-dryrun.cmd` | `client.py --task ...` ohne `--execute` | Logs zeigen 30 Hz, keine Moves, `outputs/cloud_client.jsonl` |
 | 9 | `8-inference-execute.cmd` | Echte Fahrt mit Guards | Arm bewegt sich, Guards greifen bei Sprüngen |
-| — | `sim-test.cmd` | MuJoCo-Loop ohne Hardware | `outputs/sim.mp4` |
+| — | `sim-web.cmd` | Interaktives MuJoCo-Schach-Studio im Browser (`http://127.0.0.1:8080`) | Live-Stream (`Dual/Scene/Wrist/Top`), Prompt-Eingabe, 32-Step-Kurven |
+| — | `sim-test.cmd` | MuJoCo-CLI-Loop ohne Hardware | `outputs/sim.mp4` |
 
 **Konfiguration zentral:** Ports/Dataset-Name/Zielanzahl oben in `_env.cmd` (aktuell `COM10`/`COM15`), Kameras/Aufgabe/Längen in `config/record.yaml` bzw. `config/inference.yaml`.
 
@@ -400,7 +415,7 @@ Alle per CLI überschreibbar (`--arm-jump`, `--chunk-arm-span 0` zum Deaktiviere
 
 - [x] F3A-kompatible Aufnahme (`use_degrees`, `scene`/`wrist`, `streaming_encoding`)
 - [x] Kalibrierung mit SO-101-Mittelpose + `drive_mode`
-- [x] MuJoCo-Sim (`sim.py`, `sim-test.cmd`) inkl. Mock-Sweep
+- [x] MuJoCo-Schach-Sim (`Schach/chess_scene.xml`, `sim.py`, `sim_web.py`, `sim-web.cmd`) inkl. Live-Browser-UI & `JointNormalizer`-Anbindung
 - [x] Cloud-Stack: `server.py` + `client.py` (Guards, FakeRobot) + `galaxy.py` (AI Galaxy) + `setup_remote.sh`
 - [x] Dry-Run / Execute getrennt (`7`/`8-*.cmd`)
 - [x] Trainingsvideos + Screenshots versioniert (`assets/training/`)

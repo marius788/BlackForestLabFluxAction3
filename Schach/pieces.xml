@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Chess pieces for the NexArm tabletop; included by chess_scene.xml. Each piece is a free
+     body made of ONE solid cylinder, so the jaws (contype 8 / conaffinity 11, 30 mm tall) have a
+     tall constant-radius wall to close on anywhere along the height - a thin wide base let them
+     contact only the bottom rim, foul the board and squeeze the piece out. The 6-8 mm radius
+     clears the 25 mm squares. Contype 2 / conaffinity 3 is the same handshake as the cube and
+     bowls. -->
+<mujoco model="NexArm chess pieces">
+  <default>
+    <default class="chess_piece">
+      <geom type="cylinder" contype="2" conaffinity="3" friction="1.5 0.01 0.001" />
+    </default>
+  </default>
+  <asset>
+    <material name="piece_white" rgba="0.94 0.93 0.90 1" specular="0.5" shininess="0.35" roughness="0.35" />
+    <material name="piece_black" rgba="0.10 0.10 0.12 1" specular="0.4" shininess="0.3" roughness="0.4" />
+  </asset>
+  <worldbody>
+    <body name="w_rook_a1" pos="-0.0875 -0.3375 0.01">
+      <freejoint name="w_rook_a1_joint" />
+      <geom name="w_rook_a1_body" class="chess_piece" material="piece_white" mass="0.01" size="0.0075 0.012" pos="0 0 0.012" />
+    </body>
+    <body name="w_knight_b1" pos="-0.0625 -0.3375 0.01">
+      <freejoint name="w_knight_b1_joint" />
+      <geom name="w_knight_b1_body" class="chess_piece" material="piece_white" mass="0.01" size="0.0075 0.013" pos="0 0 0.013" />
+    </body>
+    <body name="w_bishop_c1" pos="-0.0375 -0.3375 0.01">
+      <freejoint name="w_bishop_c1_joint" />
+      <geom name="w_bishop_c1_body" class="chess_piece" material="piece_white" mass="0.009" size="0.007 0.014" pos="0 0 0.014" />
+    </body>
+    <body name="w_queen_d1" pos="-0.0125 -0.3375 0.01">
+      <freejoint name="w_queen_d1_joint" />
+      <geom name="w_queen_d1_body" class="chess_piece" material="piece_white" mass="0.01" size="0.0075 0.016" pos="0 0 0.016" />
+    </body>
+    <body name="w_king_e1" pos="0.0125 -0.3375 0.01">
+      <freejoint name="w_king_e1_joint" />
+      <geom name="w_king_e1_body" class="chess_piece" material="piece_white" mass="0.011" size="0.008 0.018" pos="0 0 0.018" />
+    </body>
+    <body name="w_bishop_f1" pos="0.0375 -0.3375 0.01">
+      <freejoint name="w_bishop_f1_joint" />
+      <geom name="w_bishop_f1_body" class="chess_piece" material="piece_white" mass="0.009" size="0.007 0.014" pos="0 0 0.014" />
+    </body>
+    <body name="w_knight_g1" pos="0.0625 -0.3375 0.01">
+      <freejoint name="w_knight_g1_joint" />
+      <geom name="w_knight_g1_body" class="chess_piece" material="piece_white" mass="0.01" size="0.0075 0.013" pos="0 0 0.013" />
+    </body>
+    <body name="w_rook_h1" pos="0.0875 -0.3375 0.01">
+      <freejoint name="w_rook_h1_joint" />
+      <geom name="w_rook_h1_body" class="chess_piece" material="piece_white" mass="0.01" size="0.0075 0.012" pos="0 0 0.012" />
+    </body>
+    <body name="w_pawn_a2" pos="-0.0875 -0.3125 0.01">
+      <freejoint name="w_pawn_a2_joint" />
+      <geom name="w_pawn_a2_body" class="chess_piece" material="piece_white" mass="0.006" size="0.006 0.011" pos="0 0 0.011" />
+    </body>
+    <body name="w_pawn_b2" pos="-0.0625 -0.3125 0.01">
+      <freejoint name="w_pawn_b2_joint" />
+      <geom name="w_pawn_b2_body" class="chess_piece" material="piece_white" mass="0.006" size="0.006 0.011" pos="0 0 0.011" />
+    </body>
+    <body name="w_pawn_c2" pos="-0.0375 -0.3125 0.01">
+      <freejoint name="w_pawn_c2_joint" />
+      <geom name="w_pawn_c2_body" class="chess_piece" material="piece_white" mass="0.006" size="0.006 0.011" pos="0 0 0.011" />
+    </body>
+    <body name="w_pawn_d2" pos="-0.0125 -0.3125 0.01">
+      <freejoint name="w_pawn_d2_joint" />
+      <geom name="w_pawn_d2_body" class="chess_piece" material="piece_white" mass="0.006" size="0.006 0.011" pos="0 0 0.011" />
+    </body>
+    <body name="w_pawn_e2" pos="0.0125 -0.3125 0.01">
+      <freejoint name="w_pawn_e2_joint" />
+      <geom name="w_pawn_e2_body" class="chess_piece" material="piece_white" mass="0.006" size="0.006 0.011" pos="0 0 0.011" />
+    </body>
+    <body name="w_pawn_f2" pos="0.0375 -0.3125 0.01">
+      <freejoint name="w_pawn_f2_joint" />
+      <geom name="w_pawn_f2_body" class="chess_piece" material="piece_white" mass="0.006" size="0.006 0.011" pos="0 0 0.011" />
+    </body>
+    <body name="w_pawn_g2" pos="0.0625 -0.3125 0.01">
+      <freejoint name="w_pawn_g2_joint" />
+      <geom name="w_pawn_g2_body" class="chess_piece" material="piece_white" mass="0.006" size="0.006 0.011" pos="0 0 0.011" />
+    </body>
+    <body name="w_pawn_h2" pos="0.0875 -0.3125 0.01">
+      <freejoint name="w_pawn_h2_joint" />
+      <geom name="w_pawn_h2_body" class="chess_piece" material="piece_white" mass="0.006" size="0.006 0.011" pos="0 0 0.011" />
+    </body>
+    <body name="b_rook_a8" pos="-0.0875 -0.1625 0.01">
+      <freejoint name="b_rook_a8_joint" />
+      <geom name="b_rook_a8_body" class="chess_piece" material="piece_black" mass="0.01" size="0.0075 0.012" pos="0 0 0.012" />
+    </body>
+    <body name="b_knight_b8" pos="-0.0625 -0.1625 0.01">
+      <freejoint name="b_knight_b8_joint" />
+      <geom name="b_knight_b8_body" class="chess_piece" material="piece_black" mass="0.01" size="0.0075 0.013" pos="0 0 0.013" />
+    </body>
+    <body name="b_bishop_c8" pos="-0.0375 -0.1625 0.01">
+      <freejoint name="b_bishop_c8_joint" />
+      <geom name="b_bishop_c8_body" class="chess_piece" material="piece_black" mass="0.009" size="0.007 0.014" pos="0 0 0.014" />
+    </body>
+    <body name="b_queen_d8" pos="-0.0125 -0.1625 0.01">
+      <freejoint name="b_queen_d8_joint" />
+      <geom name="b_queen_d8_body" class="chess_piece" material="piece_black" mass="0.01" size="0.0075 0.016" pos="0 0 0.016" />
+    </body>
+    <body name="b_king_e8" pos="0.0125 -0.1625 0.01">
+      <freejoint name="b_king_e8_joint" />
+      <geom name="b_king_e8_body" class="chess_piece" material="piece_black" mass="0.011" size="0.008 0.018" pos="0 0 0.018" />
+    </body>
+    <body name="b_bishop_f8" pos="0.0375 -0.1625 0.01">
+      <freejoint name="b_bishop_f8_joint" />
+      <geom name="b_bishop_f8_body" class="chess_piece" material="piece_black" mass="0.009" size="0.007 0.014" pos="0 0 0.014" />
+    </body>
+    <body name="b_knight_g8" pos="0.0625 -0.1625 0.01">
+      <freejoint name="b_knight_g8_joint" />
+      <geom name="b_knight_g8_body" class="chess_piece" material="piece_black" mass="0.01" size="0.0075 0.013" pos="0 0 0.013" />
+    </body>
+    <body name="b_rook_h8" pos="0.0875 -0.1625 0.01">
+      <freejoint name="b_rook_h8_joint" />
+      <geom name="b_rook_h8_body" class="chess_piece" material="piece_black" mass="0.01" size="0.0075 0.012" pos="0 0 0.012" />
+    </body>
+    <body name="b_pawn_a7" pos="-0.0875 -0.1875 0.01">
+      <freejoint name="b_pawn_a7_joint" />
+      <geom name="b_pawn_a7_body" class="chess_piece" material="piece_black" mass="0.006" size="0.006 0.011" pos="0 0 0.011" />
+    </body>
+    <body name="b_pawn_b7" pos="-0.0625 -0.1875 0.01">
+      <freejoint name="b_pawn_b7_joint" />
+      <geom name="b_pawn_b7_body" class="chess_piece" material="piece_black" mass="0.006" size="0.006 0.011" pos="0 0 0.011" />
+    </body>
+    <body name="b_pawn_c7" pos="-0.0375 -0.1875 0.01">
+      <freejoint name="b_pawn_c7_joint" />
+      <geom name="b_pawn_c7_body" class="chess_piece" material="piece_black" mass="0.006" size="0.006 0.011" pos="0 0 0.011" />
+    </body>
+    <body name="b_pawn_d7" pos="-0.0125 -0.1875 0.01">
+      <freejoint name="b_pawn_d7_joint" />
+      <geom name="b_pawn_d7_body" class="chess_piece" material="piece_black" mass="0.006" size="0.006 0.011" pos="0 0 0.011" />
+    </body>
+    <body name="b_pawn_e7" pos="0.0125 -0.1875 0.01">
+      <freejoint name="b_pawn_e7_joint" />
+      <geom name="b_pawn_e7_body" class="chess_piece" material="piece_black" mass="0.006" size="0.006 0.011" pos="0 0 0.011" />
+    </body>
+    <body name="b_pawn_f7" pos="0.0375 -0.1875 0.01">
+      <freejoint name="b_pawn_f7_joint" />
+      <geom name="b_pawn_f7_body" class="chess_piece" material="piece_black" mass="0.006" size="0.006 0.011" pos="0 0 0.011" />
+    </body>
+    <body name="b_pawn_g7" pos="0.0625 -0.1875 0.01">
+      <freejoint name="b_pawn_g7_joint" />
+      <geom name="b_pawn_g7_body" class="chess_piece" material="piece_black" mass="0.006" size="0.006 0.011" pos="0 0 0.011" />
+    </body>
+    <body name="b_pawn_h7" pos="0.0875 -0.1875 0.01">
+      <freejoint name="b_pawn_h7_joint" />
+      <geom name="b_pawn_h7_body" class="chess_piece" material="piece_black" mass="0.006" size="0.006 0.011" pos="0 0 0.011" />
+    </body>
+  </worldbody>
+</mujoco>

@@ -16,6 +16,7 @@ __pycache__/
 
 # Datasets, outputs and recordings
 /datasets/
+/local/
 outputs/
 *.mp4
 

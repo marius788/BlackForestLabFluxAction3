@@ -191,3 +191,101 @@ def test_server_models_and_pad_frames():
     sweep_cmds = server.SweepModel().predict(req)
     assert len(mock_cmds) == 32 and all(len(c) == 6 for c in mock_cmds)
     assert len(sweep_cmds) == 32 and all(len(c) == 6 for c in sweep_cmds)
+
+
+def test_sim_web_controller_and_endpoints():
+    pytest.importorskip("fastapi")
+    sim_web = load_module("sim_web")
+
+    class WebDummyRobot(DummyRobot):
+        def connect(self):
+            pass
+
+        def disconnect(self):
+            pass
+
+    robot = WebDummyRobot([0.0, 10.0, -15.0, 15.0, 0.0, 0.0])
+    ctrl = sim_web.SimWebController(robot, connect_on_MainThread=True)
+
+    # Initial snapshot
+    snap0 = ctrl.get_snapshot()
+    assert snap0["status"] == "idle"
+    assert snap0["state"] == [0.0, 10.0, -15.0, 15.0, 0.0, 0.0]
+    assert len(ctrl.get_jpeg("dual")) > 100
+
+    # Dry-run with built-in demo_stack backend: should record plan but not send actions
+    ctrl.enqueue(
+        "control",
+        sim_web.ControlRequest(task="pick up the small yellow box", mode="dryrun", backend="demo_stack"),
+    )
+    ctrl.step_once_in_thread()
+    snap_dry = ctrl.get_snapshot()
+    assert snap_dry["status"] == "dryrun_done"
+    assert snap_dry["task"] == "pick up the small yellow box"
+    assert snap_dry["last_plan"] is not None
+    assert len(snap_dry["last_plan"]["commands"]) == 32
+    assert snap_dry["last_plan"]["guard_ok"] is True
+    assert robot.sent == []
+
+    # Execute 1 chunk ('once'): first tick requests plan, next 32 ticks execute commands
+    ctrl.enqueue(
+        "control",
+        sim_web.ControlRequest(task="put the small box on top of the big box", mode="once", backend="demo_sweep"),
+    )
+    ctrl.step_once_in_thread()  # plans
+    for _ in range(32):
+        ctrl.step_once_in_thread()  # executes 32 steps
+    snap_exec = ctrl.get_snapshot()
+    assert len(robot.sent) == 32
+    assert snap_exec["mode"] == "pause"
+    assert snap_exec["status"] == "idle"
+    assert snap_exec["plan_count"] == 2
+
+
+def test_sim_uses_inference_config_and_follower_calibration():
+    pytest.importorskip("mujoco")
+    sim = load_module("sim")
+    scene = NEXARM_F3A / "third_party" / "khanhthanhdev-lerobot-nexarm" / "sim" / "description" / "mjcf" / "scene.xml"
+    if not scene.is_file():
+        pytest.skip("MuJoCo scene.xml not present")
+
+    cfg_path = NEXARM_F3A / "config" / "inference.yaml"
+    robot = sim.MujocoRobot(scene, config_path=cfg_path)
+    assert robot.normalizer is not None
+    assert robot.calibration_path == (NEXARM_F3A / "calibration" / "follower" / "follower.json").resolve()
+
+    # Roundtrip within calibrated range matches JointNormalizer tick quantization
+    pose = [-14.0, -34.0, -15.0, 48.0, 5.0, 68.0]
+    sim_q = robot.to_sim(pose)
+    back = robot.from_sim(sim_q)
+    for name, expected, got in zip(sim.JOINT_NAMES, pose, back, strict=True):
+        raw = robot.normalizer.unnormalize(name, expected)
+        quantized = robot.normalizer.normalize(name, raw)
+        assert abs(got - quantized) < 1e-4
+
+
+def test_chess_scene_loads_and_tracks_piece_squares():
+    pytest.importorskip("mujoco")
+    sim = load_module("sim")
+    sim_web = load_module("sim_web")
+    chess_scene = NEXARM_F3A.parent / "Schach" / "chess_scene.xml"
+    if not chess_scene.is_file():
+        pytest.skip("Schach/chess_scene.xml not present")
+
+    robot = sim.MujocoRobot(chess_scene, config_path=NEXARM_F3A / "config" / "inference.yaml")
+    ctrl = sim_web.SimWebController(robot, connect_on_MainThread=True)
+    try:
+        assert ctrl.is_chess is True
+        snap = ctrl.get_snapshot()
+        assert snap["is_chess"] is True
+        squares = snap["box_positions"]["squares"]
+        assert squares["w_pawn_e2"] == "e2"
+        assert squares["w_pawn_d2"] == "d2"
+        assert squares["w_knight_g1"] == "g1"
+        assert squares["b_pawn_e7"] == "e7"
+        assert len(ctrl.get_jpeg("top")) > 100
+    finally:
+        robot.disconnect()
+
+
+
