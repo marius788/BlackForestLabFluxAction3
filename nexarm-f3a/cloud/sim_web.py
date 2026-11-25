@@ -54,13 +54,31 @@ DEFAULT_SCENE = SCHACH_SCENE if SCHACH_SCENE.is_file() else BOX_SCENE
 FILES = "abcdefgh"
 
 
-def xy_to_square(x: float, y: float) -> str:
-    """Convert MuJoCo world (x, y) on the NexArm chessboard (centered at 0, -0.25) to algebraic notation."""
-    file_idx = round((x + 0.0875) / 0.025)
-    rank_idx = round(((y + 0.25) + 0.0875) / 0.025)
+def xy_to_square(x: float, y: float, camera_cfg: dict | None = None) -> str:
+    """Convert MuJoCo world (x, y) on the NexArm chessboard to algebraic notation."""
+    if camera_cfg and camera_cfg.get("real_board_layout"):
+        b = camera_cfg.get("board", {})
+        cx, cy = b.get("center_xy", [0.041, -0.2415])
+        sq = float(b.get("square_size", 0.0355))
+        file_idx = round(3.5 - (x - cx) / sq)
+        rank_idx = round(3.5 - (y - cy) / sq)
+    else:
+        file_idx = round((x + 0.0875) / 0.025)
+        rank_idx = round(((y + 0.25) + 0.0875) / 0.025)
     if 0 <= file_idx < 8 and 0 <= rank_idx < 8:
         return f"{FILES[file_idx]}{rank_idx + 1}"
     return f"({x:+.2f},{y:+.2f})"
+
+
+def square_to_xy(sq_name: str, camera_cfg: dict | None = None) -> tuple[float, float, float]:
+    f_idx = FILES.index(sq_name[0])
+    r_idx = int(sq_name[1]) - 1
+    if camera_cfg and camera_cfg.get("real_board_layout"):
+        b = camera_cfg.get("board", {})
+        cx, cy = b.get("center_xy", [0.041, -0.2415])
+        sq = float(b.get("square_size", 0.0355))
+        return cx + (3.5 - f_idx) * sq, cy + (3.5 - r_idx) * sq, float(b.get("surface_z", 0.056))
+    return -0.0875 + f_idx * 0.025, -0.3375 + r_idx * 0.025, 0.01
 
 
 class ControlRequest(BaseModel):
@@ -320,7 +338,9 @@ class SimWebController:
                             round(float(pos[1]), 4),
                             round(float(pos[2]), 4),
                         ]
-                        squares[piece_name] = xy_to_square(float(pos[0]), float(pos[1]))
+                        squares[piece_name] = xy_to_square(
+                            float(pos[0]), float(pos[1]), getattr(self.robot, "camera_cfg", None)
+                        )
                     except Exception:
                         pass
                 positions["squares"] = squares
@@ -351,22 +371,24 @@ class SimWebController:
 
             if randomize_boxes:
                 if self.is_chess:
-                    # Apply a randomized chess opening setup (advance 2-3 pawns to rank 3/4 or 5/6)
+                    # Apply a randomized chess opening setup (advance 2 pawns to rank 4 or 5)
+                    cam_cfg = getattr(self.robot, "camera_cfg", None)
                     candidates = [
-                        ("w_pawn_e2", 0.0125, -0.2625),   # e4
-                        ("w_pawn_d2", -0.0125, -0.2625),  # d4
-                        ("w_pawn_c2", -0.0375, -0.2625),  # c4
-                        ("b_pawn_e7", 0.0125, -0.2375),   # e5
-                        ("b_pawn_c7", -0.0375, -0.2375),  # c5
-                        ("b_pawn_d7", -0.0125, -0.2375),  # d5
+                        ("w_pawn_e2", "e4"),
+                        ("w_pawn_d2", "d4"),
+                        ("w_pawn_c2", "c4"),
+                        ("b_pawn_e7", "e5"),
+                        ("b_pawn_c7", "c5"),
+                        ("b_pawn_d7", "d5"),
                     ]
                     chosen_idx = self._rng.choice(len(candidates), size=2, replace=False)
                     for idx in chosen_idx:
-                        pname, px, py = candidates[int(idx)]
+                        pname, sq_target = candidates[int(idx)]
+                        px, py, pz = square_to_xy(sq_target, cam_cfg)
                         try:
                             jnt_id = self.robot.model.body(pname).jntadr[0]
                             qadr = self.robot.model.jnt_qposadr[jnt_id]
-                            self.robot.data.qpos[qadr : qadr + 3] = [px, py, 0.01]
+                            self.robot.data.qpos[qadr : qadr + 3] = [px, py, pz]
                             self.robot.data.qpos[qadr + 3 : qadr + 7] = [1.0, 0.0, 0.0, 0.0]
                         except Exception:
                             pass

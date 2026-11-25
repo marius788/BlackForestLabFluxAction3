@@ -29,6 +29,7 @@ from lerobot_robot_nexarm.calibration import DEGREES_PER_TICK, JointNormalizer, 
 KEYS = [f"{name}.pos" for name in JOINT_NAMES]
 DEFAULT_CONFIG = Path(__file__).resolve().parent.parent / "config" / "inference.yaml"
 DEFAULT_CALIBRATION = Path(__file__).resolve().parent.parent / "calibration" / "follower" / "follower.json"
+DEFAULT_CAMERA_CONFIG = Path(__file__).resolve().parent.parent / "config" / "sim_camera.json"
 SCHACH_DIR = Path(__file__).resolve().parents[2] / "Schach"
 MJCF_DIR = (
     Path(__file__).resolve().parent.parent
@@ -70,33 +71,43 @@ def resolve_scene_path(scene: Path) -> Path:
 
         chess_sub = MJCF_DIR / "chess"
         chess_sub.mkdir(parents=True, exist_ok=True)
-        if (SCHACH_DIR / "chess_scene.xml").is_file():
-            shutil.copy2(SCHACH_DIR / "chess_scene.xml", MJCF_DIR / "chess_scene.xml")
-        for sub_name in ("board.xml", "pieces.xml"):
-            src = SCHACH_DIR / sub_name
-            if src.is_file():
-                shutil.copy2(src, chess_sub / sub_name)
+        pairs = [(SCHACH_DIR / "chess_scene.xml", MJCF_DIR / "chess_scene.xml")] + [
+            (SCHACH_DIR / sub_name, chess_sub / sub_name) for sub_name in ("board.xml", "pieces.xml")
+        ]
+        for src, dst in pairs:
+            if src.is_file() and (not dst.is_file() or src.read_bytes() != dst.read_bytes()):
+                try:
+                    shutil.copy2(src, dst)
+                except PermissionError:
+                    if not dst.is_file():
+                        raise
         return MJCF_DIR / "chess_scene.xml"
     return scene
 
 
-def build_model(scene: Path) -> mujoco.MjModel:
+def build_model(scene: Path, appearance: dict | None = None) -> mujoco.MjModel:
     """Load either the chess scene (chessboard + 32 pieces) or the box-stacking scene."""
     resolved = resolve_scene_path(scene)
     spec = mujoco.MjSpec.from_file(str(resolved))
     is_chess = spec.body("chessboard") is not None
+    if appearance is not None:
+        from sim_camera import apply_appearance
+
+        apply_appearance(spec, appearance)
+        spec.visual.global_.offwidth = 1600  # room for the supersampled fisheye source render
+        spec.visual.global_.offheight = 1200
 
     if is_chess:
         # Upgrade chess piece geoms with torsional friction & firm contact stiffness for grasping
         for geom in spec.geoms:
-            if geom.name and (geom.name.startswith("w_") or geom.name.startswith("b_")):
+            if geom.name and (geom.name.startswith("w_") or geom.name.startswith("b_")) and geom.contype != 0:
                 geom.condim = 4
                 geom.solref = [0.004, 1.0]
                 geom.solimp = [0.95, 0.99, 0.001, 0.5, 2.0]
-        position = [0.42, -0.68, 0.52]
-        spec.worldbody.add_camera(
-            name="scene", pos=position, xyaxes=look_at(position, [0.0, -0.25, 0.04]), fovy=46
-        )
+        s_cfg = (appearance or {}).get("scene", {})
+        position = s_cfg.get("pos", [0.42, -0.68, 0.52])
+        xyaxes = s_cfg.get("xyaxes", look_at(position, [0.0, -0.25, 0.04]))
+        spec.worldbody.add_camera(name="scene", pos=position, xyaxes=xyaxes, fovy=46)
         return spec.compile()
 
     for key in list(spec.keys):  # they list the old objects' positions
@@ -177,8 +188,21 @@ class MujocoRobot:
         fps: float = 30.0,
         config_path: Path | None = None,
         calibration_path: Path | None = None,
+        camera_config: dict | Path | None = None,
+        raw_render: bool = False,
     ):
-        self.model = build_model(scene)
+        """camera_config: dict or path of config/sim_camera.json (default: that file if it
+        exists). It switches on the real-camera look (cloud/sim_camera.py). Pass
+        camera_config=False for the plain MuJoCo render."""
+        if camera_config is None and Path(DEFAULT_CAMERA_CONFIG).is_file():
+            camera_config = DEFAULT_CAMERA_CONFIG
+        if camera_config is not None and camera_config is not False and not isinstance(camera_config, dict):
+            from sim_camera import load_config
+
+            camera_config = load_config(Path(camera_config))
+        self.camera_cfg = camera_config if isinstance(camera_config, dict) else None
+        self.raw_render = raw_render
+        self.model = build_model(scene, self.camera_cfg)
         self.data = mujoco.MjData(self.model)
         self.video, self.fps = video, fps
         self.steps = max(1, round(1 / fps / self.model.opt.timestep))  # physics steps per control tick
@@ -236,11 +260,21 @@ class MujocoRobot:
 
     def connect(self):
         self.renderer = mujoco.Renderer(self.model, HEIGHT, WIDTH)
+        self.cameras, self.source_renderer = {}, None
+        if self.camera_cfg is not None:
+            from sim_camera import CameraModel
+
+            for i, cam in enumerate(("scene", "wrist")):
+                self.cameras[cam] = CameraModel(self.camera_cfg[cam], seed=i)
+            first = next(iter(self.cameras.values()))
+            self.source_renderer = mujoco.Renderer(self.model, first.src_h, first.src_w)
         self.reset()
 
     def disconnect(self):
         if self.renderer is not None:
             self.renderer.close()
+        if getattr(self, "source_renderer", None) is not None:
+            self.source_renderer.close()
         if self.video is not None and self.frames:
             self.video.parent.mkdir(parents=True, exist_ok=True)
             height, width = self.frames[0].shape[:2]
@@ -252,7 +286,18 @@ class MujocoRobot:
             writer.release()
             print(f"Video: {self.video} ({len(self.frames)} frames)")
 
+    def render_source(self, camera: str) -> np.ndarray:
+        """Wide high-resolution pinhole render that the camera model turns into a fisheye frame."""
+        cam = self.cameras[camera]
+        cam_id = self.model.camera(camera).id
+        self.model.cam_fovy[cam_id] = cam.src_fovy
+        self.source_renderer.update_scene(self.data, camera=camera)
+        return self.source_renderer.render().copy()
+
     def render(self, camera: str) -> np.ndarray:
+        if camera in getattr(self, "cameras", {}):
+            source = self.render_source(camera)
+            return source if self.raw_render else self.cameras[camera](source)
         self.renderer.update_scene(self.data, camera=camera)
         return self.renderer.render().copy()
 

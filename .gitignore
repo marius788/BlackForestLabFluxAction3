@@ -19,6 +19,9 @@ __pycache__/
 /local/
 outputs/
 *.mp4
+!/nexarm-f3a/simulation_data/
+!/nexarm-f3a/simulation_data/**/*.mp4
+!/nexarm-f3a/simulation_data/**/*.png
 
 # Secrets, environment files and SSH known_hosts
 .env
